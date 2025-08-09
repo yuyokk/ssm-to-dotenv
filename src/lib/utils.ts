@@ -1,5 +1,25 @@
 import { Parameter } from "@aws-sdk/client-ssm";
-import { EnvVariable } from "./types.js";
+
+export type EnvVariable =
+  | {
+      type: "value";
+      name: string;
+      value: string | undefined;
+    }
+  | {
+      type: "ssm";
+      name: string;
+      path: string;
+      value: string | undefined;
+    }
+  | {
+      type: "comment";
+      value: string;
+    }
+  | {
+      type: "other";
+      value: string;
+    };
 
 export function parseCliArgs(cliArgs: string[]) {
   const args: Record<string, string | boolean> = {};

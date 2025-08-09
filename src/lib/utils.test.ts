@@ -5,7 +5,7 @@ import {
   enrichWithSsmParams,
   formatEnvVarsAsString,
 } from "./utils.js";
-import { EnvVariable } from "./types.js";
+import { EnvVariable } from "./utils.js";
 import { Parameter } from "@aws-sdk/client-ssm";
 
 describe("parseCliArgs", () => {

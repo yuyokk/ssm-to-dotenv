@@ -1,12 +1,15 @@
 import fs from "node:fs/promises";
-import * as ssm from "./ssm-client.js";
+import * as ssm from "./lib/ssm-client.js";
 import {
   parseCliArgs,
   parseInput,
   enrichWithSsmParams,
   formatEnvVarsAsString,
-} from "./utils.js";
-import { FILE_ENCODING, INPUT_FILE, OUTPUT_FILE } from "./constants.js";
+} from "./lib/utils.js";
+
+const INPUT_FILE = ".env.example";
+const OUTPUT_FILE = ".env.local";
+const FILE_ENCODING = "utf-8";
 
 export async function handler() {
   const args = parseCliArgs(process.argv || []);

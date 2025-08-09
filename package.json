@@ -5,7 +5,7 @@
   "license": "MIT",
   "author": "Iurii Kucherov",
   "type": "module",
-  "main": "dist/handler.js",
+  "main": "dist/main.js",
   "files": [
     "dist/"
   ],
