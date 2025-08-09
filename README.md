@@ -1,4 +1,4 @@
-# @yuyokk/ssm-to-dotenv
+# ssm-to-dotenv
 
 Fetches environment variables from AWS SSM Parameter Store and writes them to a `.env` file. Supports comments and non-SSM variables. SSM variables are resolved using the AWS SDK and written to the output file.
 
