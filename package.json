@@ -1,0 +1,22 @@
+{
+  "name": "ssm-to-dotenv",
+  "version": "1.0.0",
+  "author": "Iurii Kucherov",
+  "description": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.1",
+    "@types/node": "^24.2.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ssm": "^3.864.0"
+  }
+}
