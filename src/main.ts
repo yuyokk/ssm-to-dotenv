@@ -1,0 +1,51 @@
+import fs from "node:fs/promises";
+import * as ssm from "./ssm-client.js";
+import {
+  parseCliArgs,
+  parseInput,
+  enrichWithSsmParams,
+  normalizeEnvVariables,
+  formatEnvVarsAsString,
+} from "./utils.js";
+import { FILE_ENCODING, INPUT_FILE, OUTPUT_FILE } from "./constants.js";
+
+// npx tsx src/index.ts --input=.env.example --output=.env.fetched
+
+handler()
+  .then(() => {
+    console.log("Script completed successfully");
+  })
+  .catch((error) => {
+    console.error("Script failed");
+    console.error(error);
+    process.exit(1);
+  });
+
+async function handler() {
+  const args = parseCliArgs(process.argv || []);
+  const inputFile = typeof args.input === "string" ? args.input : INPUT_FILE;
+  const outputFile =
+    typeof args.output === "string" ? args.output : OUTPUT_FILE;
+
+  console.log(`Reading input file ${inputFile}`);
+  const input = await fs.readFile(inputFile, FILE_ENCODING);
+
+  const envVarsWithoutSsmValues = parseInput(input);
+
+  const ssmPaths = envVarsWithoutSsmValues
+    .filter((envVar) => envVar.type === "ssm")
+    .map((envVar) => envVar.path);
+
+  const ssmParams = ssmPaths.length ? await ssm.getSsmParams(ssmPaths) : [];
+
+  const envVarsWithSsmValues = enrichWithSsmParams(
+    envVarsWithoutSsmValues,
+    ssmParams
+  );
+
+  const envVarsNormalized = normalizeEnvVariables(envVarsWithSsmValues);
+  const outputLines = formatEnvVarsAsString(envVarsNormalized);
+
+  console.log(`Writing environment variables to ${outputFile}`);
+  await fs.writeFile(outputFile, outputLines, FILE_ENCODING);
+}
