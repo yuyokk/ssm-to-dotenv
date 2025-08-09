@@ -1,6 +1,6 @@
 {
   "name": "@yuyokk/ssm-to-dotenv",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Fetches environment variables from AWS SSM and writes them to a .env file",
   "license": "MIT",
   "author": "Iurii Kucherov",
@@ -22,8 +22,7 @@
   },
   "scripts": {
     "build": "npx rimraf dist && npx tsc",
-    "test": "vitest",
-    "publish": "npm run build && npm publish"
+    "test": "vitest"
   },
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.864.0"
