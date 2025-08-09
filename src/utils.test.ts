@@ -131,35 +131,24 @@ VARIABLE_2=some-value`;
         },
       ]);
     });
+  });
 
-    test("should treat lines without equal sign as comments", () => {
-      const input = `# This is a comment
-VARIABLE_1=some-value
-# Another comment
+  test("should treat lines without equal sign as other", () => {
+    const input = `# This is a comment
 VARIABLE_2`;
 
-      const result = parseInput(input);
+    const result = parseInput(input);
 
-      expect(result).toEqual([
-        {
-          type: "comment",
-          value: "# This is a comment",
-        },
-        {
-          type: "value",
-          name: "VARIABLE_1",
-          value: "some-value",
-        },
-        {
-          type: "comment",
-          value: "# Another comment",
-        },
-        {
-          type: "comment",
-          value: "# VARIABLE_2",
-        },
-      ]);
-    });
+    expect(result).toEqual([
+      {
+        type: "comment",
+        value: "# This is a comment",
+      },
+      {
+        type: "other",
+        value: "VARIABLE_2",
+      },
+    ]);
   });
 
   test("should ignore empty lines", () => {
@@ -289,6 +278,7 @@ describe("formatEnvVarsAsString", () => {
       { type: "ssm", name: "VAR_2", path: "/ssm/var2", value: "bar" },
       { type: "ssm", name: "VAR_3", path: "/ssm/va3", value: undefined },
       { type: "value", name: "VAR_4", value: undefined },
+      { type: "other", value: "SOMETHING_HERE" },
     ];
 
     expect(formatEnvVarsAsString(lines)).toMatchSnapshot();

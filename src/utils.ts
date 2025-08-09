@@ -30,16 +30,13 @@ export function parseInput(input: string): EnvVariable[] {
         return commentVar;
       }
 
-      if (
-        // if there is no equal sign, treat it as a comment
-        !line.includes("=")
-      ) {
-        const commentVar: EnvVariable = {
-          type: "comment",
-          value: `# ${line}`,
+      if (!line.includes("=")) {
+        const otherVar: EnvVariable = {
+          type: "other",
+          value: line,
         };
 
-        return commentVar;
+        return otherVar;
       }
 
       const [key, value] = line.split("=").map((part) => part.trim());
@@ -97,6 +94,10 @@ export function formatEnvVarsAsString(envVars: EnvVariable[]) {
     .map((envVar) => {
       if (envVar.type === "comment") {
         return envVar.value; // Return comment as is
+      }
+
+      if (envVar.type === "other") {
+        return `# ${envVar.value}`;
       }
 
       if (envVar.type === "ssm") {

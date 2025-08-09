@@ -14,6 +14,7 @@ VAR_1=bar
 VAR_2=bar
 VAR_3= # ssm:/ssm/va3 not found
 VAR_4=
+# SOMETHING_HERE
 "
 `;
 

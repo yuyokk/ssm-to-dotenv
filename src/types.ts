@@ -13,4 +13,8 @@ export type EnvVariable =
   | {
       type: "comment";
       value: string;
+    }
+  | {
+      type: "other";
+      value: string;
     };
