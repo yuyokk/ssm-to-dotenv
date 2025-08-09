@@ -9,19 +9,7 @@ import {
 } from "./utils.js";
 import { FILE_ENCODING, INPUT_FILE, OUTPUT_FILE } from "./constants.js";
 
-// npx tsx src/index.ts --input=.env.example --output=.env.fetched
-
-handler()
-  .then(() => {
-    console.log("Script completed successfully");
-  })
-  .catch((error) => {
-    console.error("Script failed");
-    console.error(error);
-    process.exit(1);
-  });
-
-async function handler() {
+export async function handler() {
   const args = parseCliArgs(process.argv || []);
   const inputFile = typeof args.input === "string" ? args.input : INPUT_FILE;
   const outputFile =

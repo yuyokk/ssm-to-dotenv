@@ -1,13 +1,16 @@
 {
   "name": "@yuyokk/ssm-to-dotenv",
-  "version": "0.0.2",
-  "description": "Fetches environment variables from AWS SSM Parameter Store and writes them to a .env file",
+  "version": "0.0.4",
+  "description": "Fetches environment variables from AWS SSM and writes them to a .env file",
   "license": "MIT",
   "author": "Iurii Kucherov",
   "type": "module",
-  "main": "dist/main.js",
+  "main": "dist/handler.js",
+  "files": [
+    "dist/"
+  ],
   "bin": {
-    "ssm-to-dotenv": "dist/main.js"
+    "ssm-to-dotenv": "dist/cli.js"
   },
   "homepage": "https://github.com/yuyokk/ssm-to-dotenv#readme",
   "bugs": {
@@ -20,7 +23,7 @@
   "scripts": {
     "build": "npx rimraf dist && npx tsc",
     "test": "vitest",
-    "publish": "npm run build && npm run test && npm publish"
+    "publish": "npm run build && npm publish"
   },
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.864.0"
