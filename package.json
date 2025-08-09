@@ -1,6 +1,6 @@
 {
   "name": "@yuyokk/ssm-to-dotenv",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Fetches environment variables from AWS SSM and writes them to a .env file",
   "license": "MIT",
   "author": "Iurii Kucherov",
