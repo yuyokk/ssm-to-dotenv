@@ -96,7 +96,7 @@ export function formatEnvVarsAsString(envVars: EnvVariable[]) {
           return `${envVar.name}=${envVar.value}`;
         }
 
-        return `${envVar.name}= # ssm:${envVar.name} not found`;
+        return `${envVar.name}= # ssm:${envVar.path} not found`;
       }
 
       return `${envVar.name}=${envVar.value || ""}`;

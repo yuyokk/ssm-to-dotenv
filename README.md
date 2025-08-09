@@ -34,7 +34,7 @@ After running the script, `.env.fetched` will contain:
 DB_USER=actual-db-user-from-ssm
 DB_PASS=actual-db-pass-from-ssm
 API_KEY=some-api-key
-SOME_OTHER_VAR= # ssm:SOME_OTHER_VAR not found
+SOME_OTHER_VAR= # ssm:/my-app/other-var not found
 ```
 
 - The output always starts with a timestamp and separator.

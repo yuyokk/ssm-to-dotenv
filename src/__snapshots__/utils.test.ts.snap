@@ -12,13 +12,13 @@ exports[`formatEnvVarsAsString > should handle different env vars 1`] = `
 VAR_1=bar
 # This is a comment 2
 VAR_2=bar
-VAR_3= # ssm:VAR_3 not found
+VAR_3= # ssm:/ssm/va3 not found
 VAR_4=
 "
 `;
 
 exports[`formatEnvVarsAsString > ssm env vars > happy path 1`] = `
 "FOO=bar
-BAZ= # ssm:BAZ not found
+BAZ= # ssm:/ssm/foo not found
 "
 `;
