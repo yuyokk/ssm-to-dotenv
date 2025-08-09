@@ -1,14 +1,47 @@
 import { describe, expect, test } from "vitest";
 import {
   ParsedEnvVars,
+  EnvVars,
+  SSM_VALUE_NOT_FOUND,
+  parseCliArgs,
   parseInput,
   enrichEnvVarsWithSsmParams,
   normalizeEnvVars,
   envVarsToLines,
-  EnvVars,
-  SSM_VALUE_NOT_FOUND,
 } from "./index.js";
 import { Parameter } from "@aws-sdk/client-ssm";
+
+describe("parseCliArgs", () => {
+  test("should parse single CLI arg with value", () => {
+    const args = ["--foo=bar"];
+    const result = parseCliArgs(args);
+    expect(result).toEqual({ foo: "bar" });
+  });
+
+  test("should parse multiple CLI args", () => {
+    const args = ["--foo=bar", "--baz=qux"];
+    const result = parseCliArgs(args);
+    expect(result).toEqual({ foo: "bar", baz: "qux" });
+  });
+
+  test("should handle flags without value as true", () => {
+    const args = ["--flag"];
+    const result = parseCliArgs(args);
+    expect(result).toEqual({ flag: true });
+  });
+
+  test("should ignore non -- arguments", () => {
+    const args = ["foo", "--bar=baz"];
+    const result = parseCliArgs(args);
+    expect(result).toEqual({ bar: "baz" });
+  });
+
+  test("should handle empty input", () => {
+    const args: string[] = [];
+    const result = parseCliArgs(args);
+    expect(result).toEqual({});
+  });
+});
 
 describe("parseInput", () => {
   test("should parse ssm param correctly", () => {

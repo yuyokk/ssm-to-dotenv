@@ -7,7 +7,17 @@ const OUTPUT_FILE = process.env.OUTPUT_FILE || ".env.fetched";
 export const SSM_VALUE_NOT_FOUND = "__SSM_NOT_FOUND__";
 const FILE_ENCODING = "utf-8";
 
-// npx tsx src/index.ts
+// npx tsx src/index.ts --input=.env.example --output=.env.fetched
+
+handler()
+  .then(() => {
+    console.log("Script completed successfully");
+  })
+  .catch((error) => {
+    console.error("Script failed");
+    console.error(error);
+    process.exit(1);
+  });
 
 export type EnvVars = {
   [key: string]: string | undefined;
@@ -26,17 +36,13 @@ export type ParsedEnvVars = {
       };
 };
 
-handler()
-  .then(() => {
-    console.log("Script completed successfully");
-  })
-  .catch((error) => {
-    console.error("Script failed", error);
-    process.exit(1);
-  });
+async function handler() {
+  const args = parseCliArgs(process.argv || []);
+  const inputFile = typeof args.input === "string" ? args.input : INPUT_FILE;
+  const outputFile =
+    typeof args.output === "string" ? args.output : OUTPUT_FILE;
 
-async function handler(inputFile: string = INPUT_FILE) {
-  console.log(`Reading input from ${inputFile}`);
+  console.log(`Reading input file ${inputFile}`);
   const input = await fs.readFile(inputFile, FILE_ENCODING);
 
   const envVarsWithoutSsmValues = parseInput(input);
@@ -51,8 +57,22 @@ async function handler(inputFile: string = INPUT_FILE) {
   const envVarsResult = normalizeEnvVars(envVarsWithSsmValues);
   const outputLines = envVarsToLines(envVarsResult);
 
-  console.log(`Writing environment variables to ${OUTPUT_FILE}`);
-  await fs.writeFile(OUTPUT_FILE, outputLines, FILE_ENCODING);
+  console.log(`Writing environment variables to ${outputFile}`);
+  await fs.writeFile(outputFile, outputLines, FILE_ENCODING);
+}
+
+export function parseCliArgs(cliArgs: string[]) {
+  const args: Record<string, string | boolean> = {};
+
+  for (const cliArg of cliArgs) {
+    if (cliArg.startsWith("--")) {
+      const [key, value] = cliArg.slice(2).split("=");
+
+      args[key] = value || true; // If no value is provided, set it to true
+    }
+  }
+
+  return args;
 }
 
 export function parseInput(input: string): ParsedEnvVars {
