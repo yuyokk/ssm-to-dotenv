@@ -5,11 +5,11 @@ Fetches environment variables from AWS SSM Parameter Store and writes them to a 
 ## Usage
 
 ```sh
-npx @yuyokk/ssm-to-dotenv --input=.env.example --output=.env.fetched
+npx @yuyokk/ssm-to-dotenv --input=.env.example --output=.env.local
 ```
 
 - `--input` (optional): Path to the input template file (default: `.env.example`)
-- `--output` (optional): Path to the output file (default: `.env.fetched`)
+- `--output` (optional): Path to the output file (default: `.env.local`)
 
 The script reads the input file, fetches SSM parameters for any value starting with `ssm:`, and writes the result to the output file. Comments and non-SSM variables are preserved.
 
@@ -25,7 +25,7 @@ API_KEY=some-api-key
 SOME_OTHER_VAR=ssm:/my-app/other-var
 ```
 
-After running the script, `.env.fetched` will contain:
+After running the script, `.env.local` will contain:
 
 ```ini
 # Created at 2025-08-09T12:34:56.789Z
