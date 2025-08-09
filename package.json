@@ -1,11 +1,15 @@
 {
   "name": "@yuyokk/ssm-to-dotenv",
   "version": "0.0.1",
+  "license": "MIT",
   "author": "Iurii Kucherov",
   "description": "Fetches environment variables from AWS SSM Parameter Store and writes them to a .env file",
-  "license": "MIT",
   "type": "module",
-  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuyokk/ssm-to-dotenv.git"
+  },
+  "main": "dist/main.js",
   "scripts": {
     "build": "npx rimraf dist && npx tsc",
     "test": "vitest"
