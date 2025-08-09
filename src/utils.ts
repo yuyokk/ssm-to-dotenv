@@ -1,5 +1,4 @@
 import { Parameter } from "@aws-sdk/client-ssm";
-import { SSM_VALUE_NOT_FOUND } from "./constants.js";
 import { EnvVariable } from "./types.js";
 
 export function parseCliArgs(cliArgs: string[]) {
@@ -22,7 +21,11 @@ export function parseInput(input: string): EnvVariable[] {
     .filter((line) => line.trim())
     .map((line) => {
       // Handle comments
-      if (line.startsWith("#")) {
+      if (
+        line.startsWith("#") ||
+        // if there is no equal sign, treat it as a comment
+        !line.includes("=")
+      ) {
         const commentVar: EnvVariable = {
           type: "comment",
           value: line,
@@ -37,18 +40,19 @@ export function parseInput(input: string): EnvVariable[] {
         return null;
       }
 
-      const isSsmParam = value.startsWith("ssm:");
-      const ssmPath = value.slice(4).trim();
+      if (value && value.startsWith("ssm:")) {
+        const ssmPath = value.slice(4).trim();
 
-      if (isSsmParam && ssmPath) {
-        const ssmVar: EnvVariable = {
-          type: "ssm",
-          name: key,
-          path: ssmPath,
-          value: undefined,
-        };
+        if (ssmPath) {
+          const ssmVar: EnvVariable = {
+            type: "ssm",
+            name: key,
+            path: ssmPath,
+            value: undefined,
+          };
 
-        return ssmVar;
+          return ssmVar;
+        }
       }
 
       const valueVar: EnvVariable = {
@@ -80,26 +84,6 @@ export function enrichWithSsmParams(
   });
 }
 
-export function normalizeEnvVariables(envVars: EnvVariable[]): EnvVariable[] {
-  return envVars.map((envVar) => {
-    if (envVar.type === "ssm") {
-      return {
-        ...envVar,
-        value: envVar.value || SSM_VALUE_NOT_FOUND,
-      };
-    }
-
-    if (envVar.type === "value") {
-      return {
-        ...envVar,
-        value: envVar.value || "",
-      };
-    }
-
-    return envVar;
-  });
-}
-
 export function formatEnvVarsAsString(envVars: EnvVariable[]) {
   const result = envVars
     .map((envVar) => {
@@ -108,10 +92,14 @@ export function formatEnvVarsAsString(envVars: EnvVariable[]) {
       }
 
       if (envVar.type === "ssm") {
-        return `${envVar.name}=${envVar.value}`;
+        if (envVar.value) {
+          return `${envVar.name}=${envVar.value}`;
+        }
+
+        return `${envVar.name}= # ssm:${envVar.name} not found`;
       }
 
-      return `${envVar.name}=${envVar.value}`;
+      return `${envVar.name}=${envVar.value || ""}`;
     })
     .join("\n");
 

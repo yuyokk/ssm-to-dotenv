@@ -1,10 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { SSM_VALUE_NOT_FOUND } from "./constants.js";
 import {
   parseCliArgs,
   parseInput,
   enrichWithSsmParams,
-  normalizeEnvVariables,
   formatEnvVarsAsString,
 } from "./utils.js";
 import { EnvVariable } from "./types.js";
@@ -43,59 +41,125 @@ describe("parseCliArgs", () => {
 });
 
 describe("parseInput", () => {
-  test("should parse ssm param correctly", () => {
-    const input = `
+  describe("regular env vars", () => {
+    test("should regular parse value correctly", () => {
+      const input = `VARIABLE=some-value`;
+
+      const result = parseInput(input);
+      expect(result).toEqual([
+        {
+          type: "value",
+          name: "VARIABLE",
+          value: "some-value",
+        },
+      ]);
+    });
+
+    test("should handle empty values", () => {
+      const input = `VARIABLE_WITH_EMPTY_VALUE=`;
+      const result = parseInput(input);
+
+      expect(result).toEqual([
+        {
+          type: "value",
+          name: "VARIABLE_WITH_EMPTY_VALUE",
+          value: undefined,
+        },
+      ]);
+    });
+  });
+
+  describe("ssm env vars", () => {
+    test("happy path", () => {
+      const input = `
 VARIABLE_1=ssm:/some/var/name/1
 `;
-    const result = parseInput(input);
+      const result = parseInput(input);
 
-    expect(result).toEqual([
-      {
-        type: "ssm",
-        name: "VARIABLE_1",
-        path: "/some/var/name/1",
-        value: undefined,
-      },
-    ]);
+      expect(result).toEqual([
+        {
+          type: "ssm",
+          name: "VARIABLE_1",
+          path: "/some/var/name/1",
+          value: undefined,
+        },
+      ]);
+    });
+
+    test("should ignore ssm param without path", () => {
+      const input = `VARIABLE_1=ssm:`;
+      const result = parseInput(input);
+
+      expect(result).toEqual([
+        {
+          type: "value",
+          name: "VARIABLE_1",
+          value: "ssm:",
+        },
+      ]);
+    });
   });
 
-  test("should ignore ssm param without value", () => {
-    const input = `VARIABLE_1=ssm:`;
-    const result = parseInput(input);
+  describe("comments", () => {
+    test("happy path", () => {
+      const input = `# This is a comment
+VARIABLE_1=ssm:/some/var/name/1
+# Another comment
+VARIABLE_2=some-value`;
 
-    expect(result).toEqual([
-      {
-        type: "value",
-        name: "VARIABLE_1",
-        value: "ssm:",
-      },
-    ]);
-  });
+      const result = parseInput(input);
 
-  test("should regular parse value correctly", () => {
-    const input = `VARIABLE=some-value`;
+      expect(result).toEqual([
+        {
+          type: "comment",
+          value: "# This is a comment",
+        },
+        {
+          name: "VARIABLE_1",
+          path: "/some/var/name/1",
+          type: "ssm",
+          value: undefined,
+        },
+        {
+          type: "comment",
+          value: "# Another comment",
+        },
+        {
+          name: "VARIABLE_2",
+          type: "value",
+          value: "some-value",
+        },
+      ]);
+    });
 
-    const result = parseInput(input);
-    expect(result).toEqual([
-      {
-        type: "value",
-        name: "VARIABLE",
-        value: "some-value",
-      },
-    ]);
-  });
+    test("should treat lines without equal sign as comments", () => {
+      const input = `# This is a comment
+VARIABLE_1=some-value
+# Another comment
+VARIABLE_2`;
 
-  test("should handle empty values", () => {
-    const input = `VARIABLE_WITH_EMPTY_VALUE=`;
-    const result = parseInput(input);
+      const result = parseInput(input);
 
-    expect(result).toEqual([
-      {
-        type: "value",
-        name: "VARIABLE_WITH_EMPTY_VALUE",
-        value: undefined,
-      },
-    ]);
+      expect(result).toEqual([
+        {
+          type: "comment",
+          value: "# This is a comment",
+        },
+        {
+          type: "value",
+          name: "VARIABLE_1",
+          value: "some-value",
+        },
+        {
+          type: "comment",
+          value: "# Another comment",
+        },
+        {
+          type: "comment",
+          value: "VARIABLE_2",
+        },
+      ]);
+    });
   });
 
   test("should ignore empty lines", () => {
@@ -152,45 +216,14 @@ VARIABLE_4=`;
       },
     ]);
   });
-
-  test("should handle comments", () => {
-    const input = `# This is a comment
-VARIABLE_1=ssm:/some/var/name/1
-# Another comment
-VARIABLE_2=some-value`;
-
-    const result = parseInput(input);
-
-    expect(result).toEqual([
-      {
-        type: "comment",
-        value: "# This is a comment",
-      },
-      {
-        name: "VARIABLE_1",
-        path: "/some/var/name/1",
-        type: "ssm",
-        value: undefined,
-      },
-      {
-        type: "comment",
-        value: "# Another comment",
-      },
-      {
-        name: "VARIABLE_2",
-        type: "value",
-        value: "some-value",
-      },
-    ]);
-  });
 });
 
 describe("enrichWithSsmParams", () => {
   test("should enrich SSM lines with values from ssmParams", () => {
     const lines: EnvVariable[] = [
-      { type: "ssm", name: "FOO", path: "/ssm/foo", value: "" },
+      { type: "ssm", name: "FOO", path: "/ssm/foo", value: undefined },
       { type: "value", name: "BAR", value: "baz" },
-      { type: "ssm", name: "BAZ", path: "/ssm/baz", value: "" },
+      { type: "ssm", name: "BAZ", path: "/ssm/baz", value: undefined },
     ];
     const ssmParams: Parameter[] = [
       { Name: "/ssm/foo", Value: "resolved-foo" },
@@ -224,97 +257,41 @@ describe("enrichWithSsmParams", () => {
   });
 });
 
-describe("normalizeEnvVariables", () => {
-  test("should normalize value env vars", () => {
-    const lines: EnvVariable[] = [
-      { type: "value", name: "FOO", value: "bar" },
-      { type: "value", name: "BAZ", value: "qux" },
-    ];
-    const result = normalizeEnvVariables(lines);
-    expect(result).toEqual([
-      { type: "value", name: "FOO", value: "bar" },
-      { type: "value", name: "BAZ", value: "qux" },
-    ]);
-  });
-
-  test("should normalize ssm env vars with value", () => {
-    const lines: EnvVariable[] = [
-      { type: "ssm", name: "FOO", path: "/ssm/foo", value: "bar" },
-    ];
-    const result = normalizeEnvVariables(lines);
-    expect(result).toEqual([
-      { type: "ssm", name: "FOO", path: "/ssm/foo", value: "bar" },
-    ]);
-  });
-
-  test("should normalize ssm env vars with missing value", () => {
-    const lines: EnvVariable[] = [
-      { type: "ssm", name: "FOO", path: "/ssm/foo", value: "" },
-    ];
-    const result = normalizeEnvVariables(lines);
-    expect(result).toEqual([
-      {
-        type: "ssm",
-        name: "FOO",
-        path: "/ssm/foo",
-        value: SSM_VALUE_NOT_FOUND,
-      },
-    ]);
-  });
-
-  test("should handle mixed and empty input", () => {
-    expect(normalizeEnvVariables([])).toEqual([]);
-    const lines: EnvVariable[] = [
-      { type: "value", name: "FOO", value: "" },
-      { type: "ssm", name: "BAR", path: "/ssm/bar", value: "" },
-    ];
-    const result = normalizeEnvVariables(lines);
-    expect(result).toEqual([
-      { type: "value", name: "FOO", value: "" },
-      {
-        type: "ssm",
-        name: "BAR",
-        path: "/ssm/bar",
-        value: SSM_VALUE_NOT_FOUND,
-      },
-    ]);
-  });
-});
-
 describe("formatEnvVarsAsString", () => {
-  test("should format value lines", () => {
-    const lines: EnvVariable[] = [
-      { type: "value", name: "FOO", value: "bar" },
-      { type: "value", name: "BAZ", value: "qux" },
-    ];
+  describe("regular env vars", () => {
+    test("happy path", () => {
+      const envVars: EnvVariable[] = [
+        { type: "value", name: "FOO", value: "bar" },
+        { type: "value", name: "BAZ", value: "qux" },
+        { type: "value", name: "BAR", value: undefined },
+      ];
 
-    expect(formatEnvVarsAsString(lines)).toBe("FOO=bar\nBAZ=qux\n");
+      expect(formatEnvVarsAsString(envVars)).toMatchSnapshot();
+    });
   });
 
-  test("should format ssm lines", () => {
-    const lines: EnvVariable[] = [
-      { type: "ssm", name: "FOO", path: "/ssm/foo", value: "bar" },
-    ];
+  describe("ssm env vars", () => {
+    test("happy path", () => {
+      const envVars: EnvVariable[] = [
+        { type: "ssm", name: "FOO", path: "/ssm/foo", value: "bar" },
+        { type: "ssm", name: "BAZ", path: "/ssm/foo", value: undefined },
+      ];
 
-    expect(formatEnvVarsAsString(lines)).toBe("FOO=bar\n");
+      expect(formatEnvVarsAsString(envVars)).toMatchSnapshot();
+    });
   });
 
-  test("should format comment lines", () => {
+  test("should handle different env vars", () => {
     const lines: EnvVariable[] = [
-      { type: "comment", value: "# This is a comment" },
-      { type: "value", name: "FOO", value: "bar" },
+      { type: "comment", value: "# This is a comment 1" },
+      { type: "value", name: "VAR_1", value: "bar" },
+      { type: "comment", value: "# This is a comment 2" },
+      { type: "ssm", name: "VAR_2", path: "/ssm/var2", value: "bar" },
+      { type: "ssm", name: "VAR_3", path: "/ssm/va3", value: undefined },
+      { type: "value", name: "VAR_4", value: undefined },
     ];
 
-    expect(formatEnvVarsAsString(lines)).toBe("# This is a comment\nFOO=bar\n");
-  });
-
-  test("should handle mixed and empty input", () => {
-    const lines: EnvVariable[] = [
-      { type: "value", name: "FOO", value: "" },
-      { type: "ssm", name: "BAR", path: "/ssm/bar", value: "" },
-    ];
-
-    expect(formatEnvVarsAsString(lines)).toBe("FOO=\nBAR=\n");
+    expect(formatEnvVarsAsString(lines)).toMatchSnapshot();
   });
 
   test("should handle empty input", () => {

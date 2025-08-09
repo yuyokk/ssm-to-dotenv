@@ -1,0 +1,24 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`formatEnvVarsAsString > regular env vars > happy path 1`] = `
+"FOO=bar
+BAZ=qux
+BAR=
+"
+`;
+
+exports[`formatEnvVarsAsString > should handle different env vars 1`] = `
+"# This is a comment 1
+VAR_1=bar
+# This is a comment 2
+VAR_2=bar
+VAR_3= # ssm:VAR_3 not found
+VAR_4=
+"
+`;
+
+exports[`formatEnvVarsAsString > ssm env vars > happy path 1`] = `
+"FOO=bar
+BAZ= # ssm:BAZ not found
+"
+`;

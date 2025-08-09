@@ -4,7 +4,6 @@ import {
   parseCliArgs,
   parseInput,
   enrichWithSsmParams,
-  normalizeEnvVariables,
   formatEnvVarsAsString,
 } from "./utils.js";
 import { FILE_ENCODING, INPUT_FILE, OUTPUT_FILE } from "./constants.js";
@@ -31,9 +30,10 @@ export async function handler() {
     ssmParams
   );
 
-  const envVarsNormalized = normalizeEnvVariables(envVarsWithSsmValues);
-  const outputLines = formatEnvVarsAsString(envVarsNormalized);
+  const result = `# Created at ${new Date().toISOString()}
+# ---
+${formatEnvVarsAsString(envVarsWithSsmValues)}`;
 
   console.log(`Writing environment variables to ${outputFile}`);
-  await fs.writeFile(outputFile, outputLines, FILE_ENCODING);
+  await fs.writeFile(outputFile, result, FILE_ENCODING);
 }
