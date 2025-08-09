@@ -5,7 +5,7 @@ const ssmClient = new SSMClient({
 });
 
 export async function getSsmParams(ssmPaths: string[]) {
-  console.log("getSsmParams() req", JSON.stringify(ssmPaths));
+  console.log("aws.GetParametersCommand()", JSON.stringify(ssmPaths));
 
   const result = await ssmClient.send(
     new GetParametersCommand({

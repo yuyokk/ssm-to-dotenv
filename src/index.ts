@@ -3,10 +3,28 @@ import fs from "node:fs/promises";
 import * as ssm from "./ssm.js";
 
 const INPUT_FILE = process.env.INPUT_FILE || ".env.example";
-const OUTPUT_FILE = process.env.OUTPUT_FILE || ".env.local";
-const SSM_VALUE_NOT_FOUND = "__NOT_FOUND__";
+const OUTPUT_FILE = process.env.OUTPUT_FILE || ".env.fetched";
+export const SSM_VALUE_NOT_FOUND = "__SSM_NOT_FOUND__";
+const FILE_ENCODING = "utf-8";
 
 // npx tsx src/index.ts
+
+export type EnvVars = {
+  [key: string]: string | undefined;
+};
+
+export type ParsedEnvVars = {
+  [key: string]:
+    | {
+        type: "value";
+        value: string | undefined;
+      }
+    | {
+        type: "ssm";
+        path: string;
+        value: string | undefined;
+      };
+};
 
 handler()
   .then(() => {
@@ -17,29 +35,25 @@ handler()
     process.exit(1);
   });
 
-async function handler(filePath: string = INPUT_FILE) {
-  const envVars = await readEnvVarsFromFile(filePath);
+async function handler(inputFile: string = INPUT_FILE) {
+  console.log(`Reading input from ${inputFile}`);
+  const input = await fs.readFile(inputFile, FILE_ENCODING);
 
-  const ssmPaths = getSsmPaths(envVars);
-  const ssmParams = await ssm.getSsmParams(ssmPaths);
+  const envVarsWithoutSsmValues = parseInput(input);
 
-  if (ssmParams) {
-    const envVarsResult = mergeSsmParamsIntoEnvVars(envVars, ssmParams);
+  const ssmPaths = getSsmPaths(envVarsWithoutSsmValues);
+  const ssmParams = ssmPaths.length ? await ssm.getSsmParams(ssmPaths) : [];
 
-    await writeEnvVarsToFile(envVarsResult, OUTPUT_FILE);
-  }
+  const envVarsWithSsmValues = enrichEnvVarsWithSsmParams(
+    envVarsWithoutSsmValues,
+    ssmParams
+  );
+  const envVarsResult = normalizeEnvVars(envVarsWithSsmValues);
+  const outputLines = envVarsToLines(envVarsResult);
+
+  console.log(`Writing environment variables to ${OUTPUT_FILE}`);
+  await fs.writeFile(OUTPUT_FILE, outputLines, FILE_ENCODING);
 }
-
-type ParsedEnvVars = {
-  [key: string]: {
-    type: "ssm" | "value";
-    value: string | undefined;
-  };
-};
-
-type ResultedEnvVars = {
-  [key: string]: string | undefined;
-};
 
 export function parseInput(input: string): ParsedEnvVars {
   const lines = input.split("\n").filter((line) => line.trim());
@@ -53,15 +67,19 @@ export function parseInput(input: string): ParsedEnvVars {
       continue;
     }
 
-    if (value.startsWith("ssm:")) {
+    const isSsmParam = value.startsWith("ssm:");
+    const ssmPath = value.slice(4).trim();
+
+    if (isSsmParam && ssmPath) {
       result[key] = {
         type: "ssm",
-        value: value.slice(4), // Remove 'ssm:' prefix
+        path: ssmPath,
+        value: undefined, // Value will be fetched later
       };
     } else {
       result[key] = {
         type: "value",
-        value: value || undefined, // Handle empty values
+        value: value || undefined,
       };
     }
   }
@@ -73,47 +91,52 @@ function getSsmPaths(envVars: ParsedEnvVars) {
   const ssmPaths: string[] = [];
 
   for (const envVar of Object.values(envVars)) {
-    if (envVar.type === "ssm" && envVar.value) {
-      ssmPaths.push(envVar.value);
+    if (envVar.type === "ssm" && envVar.path) {
+      ssmPaths.push(envVar.path);
     }
   }
 
   return ssmPaths;
 }
 
-function mergeSsmParamsIntoEnvVars(
+export function enrichEnvVarsWithSsmParams(
   envVars: ParsedEnvVars,
-  ssmParams: Parameter[]
-): ResultedEnvVars {
-  const merged: ResultedEnvVars = {};
+  ssmParams: Parameter[] = []
+): ParsedEnvVars {
+  const result: ParsedEnvVars = {};
 
   for (const [key, envVar] of Object.entries(envVars)) {
-    if (envVar.type === "ssm" && envVar.value) {
-      const param = ssmParams.find((p) => p.Name === envVar.value);
+    if (envVar.type === "ssm") {
+      const param = ssmParams.find((p) => p.Name === envVar.path);
 
-      merged[key] = param ? param.Value : SSM_VALUE_NOT_FOUND;
+      result[key] = {
+        ...envVar,
+        value: param?.Value,
+      };
     } else {
-      merged[key] = envVar.value;
+      result[key] = envVar;
     }
   }
 
-  return merged;
+  return result;
 }
 
-async function readEnvVarsFromFile(filePath: string): Promise<ParsedEnvVars> {
-  console.log(`Reading input from ${filePath}`);
-  const input = await fs.readFile(filePath, "utf-8");
+export function normalizeEnvVars(envVars: ParsedEnvVars): EnvVars {
+  const normalized: EnvVars = {};
 
-  const envVars = parseInput(input);
+  for (const [key, envVar] of Object.entries(envVars)) {
+    if (envVar.type === "value") {
+      normalized[key] = envVar.value;
+    } else if (envVar.type === "ssm") {
+      normalized[key] = envVar.value || SSM_VALUE_NOT_FOUND;
+    }
+  }
 
-  return envVars;
+  return normalized;
 }
 
-async function writeEnvVarsToFile(envVars: ResultedEnvVars, filePath: string) {
-  const lines = Object.entries(envVars)
+export function envVarsToLines(envVars: EnvVars) {
+  return Object.entries(envVars)
     .map(([key, value]) => `${key}=${value || ""}`)
     .join("\n");
-
-  console.log(`Writing environment variables to ${filePath}`);
-  await fs.writeFile(filePath, lines, "utf-8");
 }
