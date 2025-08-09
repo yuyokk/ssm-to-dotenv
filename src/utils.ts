@@ -21,14 +21,22 @@ export function parseInput(input: string): EnvVariable[] {
     .filter((line) => line.trim())
     .map((line) => {
       // Handle comments
+      if (line.startsWith("#")) {
+        const commentVar: EnvVariable = {
+          type: "comment",
+          value: line,
+        };
+
+        return commentVar;
+      }
+
       if (
-        line.startsWith("#") ||
         // if there is no equal sign, treat it as a comment
         !line.includes("=")
       ) {
         const commentVar: EnvVariable = {
           type: "comment",
-          value: line,
+          value: `# ${line}`,
         };
 
         return commentVar;

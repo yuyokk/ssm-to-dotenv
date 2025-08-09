@@ -156,7 +156,7 @@ VARIABLE_2`;
         },
         {
           type: "comment",
-          value: "VARIABLE_2",
+          value: "# VARIABLE_2",
         },
       ]);
     });
