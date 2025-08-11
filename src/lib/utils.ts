@@ -5,20 +5,18 @@ export type EnvVariable =
       type: "value";
       name: string;
       value: string | undefined;
+      comment: string | undefined;
     }
   | {
       type: "ssm";
       name: string;
       path: string;
       value: string | undefined;
+      comment: string | undefined;
     }
   | {
       type: "comment";
-      value: string;
-    }
-  | {
-      type: "other";
-      value: string;
+      comment: string;
     };
 
 export function parseCliArgs(cliArgs: string[]) {
@@ -40,30 +38,32 @@ export function parseInput(input: string): EnvVariable[] {
     .split("\n")
     .filter((line) => line.trim())
     .map((line) => {
-      // Handle comments
+      // This is a comment line
       if (line.startsWith("#")) {
         const commentVar: EnvVariable = {
           type: "comment",
-          value: line,
+          comment: line.slice(1).trim(), // Remove the leading '#'
         };
 
         return commentVar;
       }
 
+      // This is "weird" line without an equal sign
       if (!line.includes("=")) {
         const otherVar: EnvVariable = {
-          type: "other",
-          value: line,
+          type: "comment",
+          comment: line,
         };
 
         return otherVar;
       }
 
-      const [key, value] = line.split("=").map((part) => part.trim());
-
-      if (!key) {
-        return null;
-      }
+      const [key, valueWithPossibleComment] = line
+        .split("=")
+        .map((part) => part.trim());
+      const [value, comment] = valueWithPossibleComment
+        .split("#")
+        .map((part) => part.trim());
 
       if (value && value.startsWith("ssm:")) {
         const ssmPath = value.slice(4).trim();
@@ -73,6 +73,7 @@ export function parseInput(input: string): EnvVariable[] {
             type: "ssm",
             name: key,
             path: ssmPath,
+            comment: comment,
             value: undefined,
           };
 
@@ -83,7 +84,8 @@ export function parseInput(input: string): EnvVariable[] {
       const valueVar: EnvVariable = {
         type: "value",
         name: key,
-        value: value || undefined,
+        comment: comment,
+        value: value,
       };
 
       return valueVar;
@@ -113,22 +115,27 @@ export function formatEnvVarsAsString(envVars: EnvVariable[]) {
   const result = envVars
     .map((envVar) => {
       if (envVar.type === "comment") {
-        return envVar.value; // Return comment as is
-      }
-
-      if (envVar.type === "other") {
-        return `# ${envVar.value}`;
+        return `# ${envVar.comment}`; // Return comment as is
       }
 
       if (envVar.type === "ssm") {
         if (envVar.value) {
-          return `${envVar.name}=${envVar.value}`;
+          return appendComment(
+            `${envVar.name}=${envVar.value}`,
+            envVar.comment
+          );
         }
 
-        return `${envVar.name}= # ssm:${envVar.path} not found`;
+        return appendComment(
+          appendComment(`${envVar.name}=`, `ssm:${envVar.path} not found`),
+          envVar.comment
+        );
       }
 
-      return `${envVar.name}=${envVar.value || ""}`;
+      return appendComment(
+        `${envVar.name}=${envVar.value || ""}`,
+        envVar.comment
+      );
     })
     .join("\n");
 
@@ -137,4 +144,12 @@ export function formatEnvVarsAsString(envVars: EnvVariable[]) {
   }
 
   return "";
+}
+
+function appendComment(value: string, comment: string | undefined) {
+  if (comment) {
+    return `${value} # ${comment}`;
+  }
+
+  return value;
 }
