@@ -16,9 +16,7 @@
   "files": [
     "dist/"
   ],
-  "bin": {
-    "ssm-to-dotenv": "dist/cli.js"
-  },
+  "bin": "dist/bin/cli.js",
   "homepage": "https://github.com/yuyokk/ssm-to-dotenv#readme",
   "bugs": {
     "url": "https://github.com/yuyokk/ssm-to-dotenv/issues"
