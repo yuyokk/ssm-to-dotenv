@@ -27,7 +27,8 @@
   },
   "scripts": {
     "build": "npx rimraf dist && npx tsc",
-    "test": "vitest"
+    "test": "vitest",
+    "publish:package": "npm run build && npm publish"
   },
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.864.0"
