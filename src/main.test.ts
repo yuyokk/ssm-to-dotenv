@@ -21,14 +21,16 @@ describe("Basic int test", () => {
     const inputEnv = `# This is a comment
 VAR1=value1
 VAR2=value2 # with comment
-VAR_WITHOUT_VALUE=
-# Another comment
 VAR3=value3
 
-VAR_1_WITH_SSM=ssm:/path/to/param1
-VAR_2_WITH_SSM=ssm:/path/to/param2
+VAR_WITH_LONG_VALUE=Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
+VAR_WITHOUT_VALUE=
+# Another comment
+
+VAR1_WITH_SSM=ssm:/path/to/param1
+VAR2_WITH_SSM=ssm:/path/to/param2
 VAR_WITH_SSM_WITH_COMMENT=ssm:/path/to/missing # comment
-VAR_WITH_SSM_PREFIX=ssm:
+VAR_WITH_SSM_PREFIX_ONLY=ssm:
 
 VAR_WITHOUT_EQUAL_SIGN
 # This is a comment
@@ -40,13 +42,14 @@ VAR_WITHOUT_EQUAL_SIGN
 # This is a comment
 VAR1=value1
 VAR2=value2 # with comment
+VAR3=value3
+VAR_WITH_LONG_VALUE=Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
 VAR_WITHOUT_VALUE=
 # Another comment
-VAR3=value3
-VAR_1_WITH_SSM=param1-value
-VAR_2_WITH_SSM=param2-value
+VAR1_WITH_SSM=param1-value
+VAR2_WITH_SSM=param2-value
 VAR_WITH_SSM_WITH_COMMENT= # ssm:/path/to/missing not found # comment
-VAR_WITH_SSM_PREFIX=ssm:
+VAR_WITH_SSM_PREFIX_ONLY=ssm:
 # VAR_WITHOUT_EQUAL_SIGN
 # This is a comment
 `;

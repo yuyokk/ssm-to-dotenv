@@ -115,7 +115,7 @@ export function formatEnvVarsAsString(envVars: EnvVariable[]) {
   const result = envVars
     .map((envVar) => {
       if (envVar.type === "comment") {
-        return `# ${envVar.comment}`; // Return comment as is
+        return `# ${envVar.comment}`;
       }
 
       if (envVar.type === "ssm") {
@@ -132,10 +132,7 @@ export function formatEnvVarsAsString(envVars: EnvVariable[]) {
         );
       }
 
-      return appendComment(
-        `${envVar.name}=${envVar.value || ""}`,
-        envVar.comment
-      );
+      return appendComment(`${envVar.name}=${envVar.value}`, envVar.comment);
     })
     .join("\n");
 
