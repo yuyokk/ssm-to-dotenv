@@ -25,6 +25,7 @@ VAR3=value3
 
 VAR_WITH_LONG_VALUE=Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
 VAR_WITHOUT_VALUE=
+VAR_WITHOUT_VALUE_WITH_COMMENT= # this is a comment
 # Another comment
 
 VAR1_WITH_SSM=ssm:/path/to/param1
@@ -45,6 +46,7 @@ VAR2=value2 # with comment
 VAR3=value3
 VAR_WITH_LONG_VALUE=Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
 VAR_WITHOUT_VALUE=
+VAR_WITHOUT_VALUE_WITH_COMMENT= # this is a comment
 # Another comment
 VAR1_WITH_SSM=param1-value
 VAR2_WITH_SSM=param2-value

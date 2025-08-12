@@ -132,7 +132,10 @@ export function formatEnvVarsAsString(envVars: EnvVariable[]) {
         );
       }
 
-      return appendComment(`${envVar.name}=${envVar.value}`, envVar.comment);
+      return appendComment(
+        `${envVar.name}=${envVar.value || ""}`,
+        envVar.comment
+      );
     })
     .join("\n");
 
