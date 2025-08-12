@@ -4,7 +4,7 @@ const ssmClient = new SSMClient({
   region: process.env.AWS_REGION || "us-east-1",
 });
 
-export async function getSsmParams(ssmPaths: string[]) {
+export async function getParams(ssmPaths: string[]) {
   console.log("aws.GetParametersCommand()", JSON.stringify(ssmPaths));
 
   const result = await ssmClient.send(

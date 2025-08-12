@@ -1,9 +1,5 @@
 #!/usr/bin/env node
-import { handler } from "./main.js";
-
-//
-// npx tsx ./src/cli.ts
-//
+import { handler } from "../main.js";
 
 handler()
   .then(() => {

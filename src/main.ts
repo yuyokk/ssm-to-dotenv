@@ -26,7 +26,7 @@ export async function handler() {
     .filter((envVar) => envVar.type === "ssm")
     .map((envVar) => envVar.path);
 
-  const ssmParams = ssmPaths.length ? await ssm.getSsmParams(ssmPaths) : [];
+  const ssmParams = ssmPaths.length ? await ssm.getParams(ssmPaths) : [];
 
   const envVarsWithSsmValues = enrichWithSsmParams(
     envVarsWithoutSsmValues,
