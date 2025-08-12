@@ -24,11 +24,15 @@ VAR2=value2 # with comment
 VAR_WITHOUT_VALUE=
 # Another comment
 VAR3=value3
-VAR_WITH_SSM=ssm:/path/to/param1
-VAR_WITH_SSM_WITH_COMMENT=ssm:/path/to/param2 # comment
-VAR_WITHOUT_EQUAL_SIGN
+
+VAR_1_WITH_SSM=ssm:/path/to/param1
+VAR_2_WITH_SSM=ssm:/path/to/param2
+VAR_WITH_SSM_WITH_COMMENT=ssm:/path/to/missing # comment
 VAR_WITH_SSM_PREFIX=ssm:
+
+VAR_WITHOUT_EQUAL_SIGN
 # This is a comment
+
 `;
 
     const expectedOutput = `# Created at 2025-08-11T20:36:38.586Z
@@ -39,10 +43,11 @@ VAR2=value2 # with comment
 VAR_WITHOUT_VALUE=
 # Another comment
 VAR3=value3
-VAR_WITH_SSM=param1-value
-VAR_WITH_SSM_WITH_COMMENT= # ssm:/path/to/param2 not found # comment
-# VAR_WITHOUT_EQUAL_SIGN
+VAR_1_WITH_SSM=param1-value
+VAR_2_WITH_SSM=param2-value
+VAR_WITH_SSM_WITH_COMMENT= # ssm:/path/to/missing not found # comment
 VAR_WITH_SSM_PREFIX=ssm:
+# VAR_WITHOUT_EQUAL_SIGN
 # This is a comment
 `;
 
@@ -56,9 +61,10 @@ VAR_WITH_SSM_PREFIX=ssm:
 
     // mock ssm.getSsmParams
     // @ts-expect-error - return mock value for getSsmParams
-    ssm.getSsmParams = vi
-      .fn()
-      .mockResolvedValue([{ Name: "/path/to/param1", Value: "param1-value" }]);
+    ssm.getSsmParams = vi.fn().mockResolvedValue([
+      { Name: "/path/to/param1", Value: "param1-value" },
+      { Name: "/path/to/param2", Value: "param2-value" },
+    ]);
 
     await handler();
 
