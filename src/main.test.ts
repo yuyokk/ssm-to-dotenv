@@ -64,7 +64,7 @@ VAR_WITH_SSM_PREFIX_ONLY=ssm:
 
     // mock ssm.getSsmParams
     // @ts-expect-error - return mock value for getSsmParams
-    ssm.getSsmParams = vi.fn().mockResolvedValue([
+    ssm.getParams = vi.fn().mockResolvedValue([
       { Name: "/path/to/param1", Value: "param1-value" },
       { Name: "/path/to/param2", Value: "param2-value" },
     ]);
