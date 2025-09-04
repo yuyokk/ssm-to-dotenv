@@ -1,18 +1,33 @@
-import { SSMClient, GetParametersCommand } from "@aws-sdk/client-ssm";
+import {
+  SSMClient,
+  GetParametersCommand,
+  type Parameter,
+} from "@aws-sdk/client-ssm";
 
-const ssmClient = new SSMClient({
+const client = new SSMClient({
   region: process.env.AWS_REGION || "us-east-1",
 });
 
-export async function getParams(ssmPaths: string[]) {
-  console.log("aws.GetParametersCommand()", JSON.stringify(ssmPaths));
+// TODO: add tests
+export async function getParams(paths: string[]) {
+  const limitParamsPerFetch = 10;
+  const results: Parameter[] = [];
 
-  const result = await ssmClient.send(
-    new GetParametersCommand({
-      Names: ssmPaths,
-      WithDecryption: true,
-    })
-  );
+  for (let i = 0; i < paths.length; i += limitParamsPerFetch) {
+    const pathsChunk = paths.slice(i, i + limitParamsPerFetch);
 
-  return result.Parameters;
+    console.log("aws.GetParametersCommand()", JSON.stringify(pathsChunk));
+    const { Parameters } = await client.send(
+      new GetParametersCommand({
+        Names: pathsChunk,
+        WithDecryption: true,
+      })
+    );
+
+    if (Parameters) {
+      results.push(...Parameters);
+    }
+  }
+
+  return results;
 }
