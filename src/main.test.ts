@@ -23,7 +23,7 @@ VAR1=value1
 VAR2=value2 # with comment
 VAR3=value3
 VAR4="value with quotes"
-
+VAR5="postresql://postgres:postgres@localhost:5432/postgres?schema=public"
 VAR_WITH_LONG_VALUE=Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
 VAR_WITHOUT_VALUE=
 VAR_WITHOUT_VALUE_WITH_COMMENT= # this is a comment
@@ -46,6 +46,7 @@ VAR1=value1
 VAR2=value2 # with comment
 VAR3=value3
 VAR4="value with quotes"
+VAR5="postresql://postgres:postgres@localhost:5432/postgres?schema=public"
 VAR_WITH_LONG_VALUE=Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
 VAR_WITHOUT_VALUE=
 VAR_WITHOUT_VALUE_WITH_COMMENT= # this is a comment

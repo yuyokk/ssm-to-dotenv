@@ -58,9 +58,12 @@ export function parseInput(input: string): EnvVariable[] {
         return otherVar;
       }
 
-      const [key, valueWithPossibleComment] = line
-        .split("=")
-        .map((part) => part.trim());
+      // Getting first "=" as there might be values with "=" sign
+      // e.g. postresql://postgres:postgres@localhost:5432/postgres?schema=public
+      const equalSignIndex = line.indexOf("=");
+      const key = line.slice(0, equalSignIndex);
+      const valueWithPossibleComment = line.slice(equalSignIndex + 1);
+
       const [value, comment] = valueWithPossibleComment
         .split("#")
         .map((part) => part.trim());
@@ -153,3 +156,5 @@ function appendComment(value: string, comment: string | undefined) {
 
   return value;
 }
+
+function splitKeyValue(str: string) {}
