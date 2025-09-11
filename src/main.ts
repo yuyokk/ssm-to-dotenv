@@ -8,7 +8,7 @@ import {
 } from "./lib/utils.js";
 
 const INPUT_FILE = ".env.example";
-const OUTPUT_FILE = ".env.local";
+const OUTPUT_FILE = ".env";
 const FILE_ENCODING = "utf-8";
 
 export async function handler() {

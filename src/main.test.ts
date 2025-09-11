@@ -77,10 +77,6 @@ VAR_WITH_SSM_PREFIX_ONLY=ssm:
     await handler();
 
     expect(fs.readFile).toHaveBeenCalledWith(".env.example", "utf-8");
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      ".env.local",
-      expectedOutput,
-      "utf-8"
-    );
+    expect(fs.writeFile).toHaveBeenCalledWith(".env", expectedOutput, "utf-8");
   });
 });
