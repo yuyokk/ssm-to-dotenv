@@ -3,10 +3,10 @@ import { handler } from "../main.js";
 
 handler()
   .then(() => {
-    console.log("Script completed successfully");
+    console.log("[ssm-to-dotenv] Script completed successfully");
   })
   .catch((error) => {
-    console.error("Script failed");
+    console.error("[ssm-to-dotenv] Script failed");
     console.error(error);
     process.exit(1);
   });
