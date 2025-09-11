@@ -17,7 +17,7 @@ export async function handler() {
   const outputFile =
     typeof args.output === "string" ? args.output : OUTPUT_FILE;
 
-  console.log(`Reading input file ${inputFile}`);
+  console.log(`[ssm-to-dotenv] Reading input file ${inputFile}`);
   const input = await fs.readFile(inputFile, FILE_ENCODING);
 
   const envVarsWithoutSsmValues = parseInput(input);
@@ -37,6 +37,6 @@ export async function handler() {
 # ---
 ${formatEnvVarsAsString(envVarsWithSsmValues)}`;
 
-  console.log(`Writing environment variables to ${outputFile}`);
+  console.log(`[ssm-to-dotenv] Writing environment variables to ${outputFile}`);
   await fs.writeFile(outputFile, result, FILE_ENCODING);
 }

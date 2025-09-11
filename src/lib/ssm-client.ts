@@ -16,7 +16,10 @@ export async function getParams(paths: string[]) {
   for (let i = 0; i < paths.length; i += limitParamsPerFetch) {
     const pathsChunk = paths.slice(i, i + limitParamsPerFetch);
 
-    console.log("aws.GetParametersCommand()", JSON.stringify(pathsChunk));
+    console.log(
+      "[ssm-to-dotenv] aws.GetParametersCommand()",
+      JSON.stringify(pathsChunk)
+    );
     const { Parameters } = await client.send(
       new GetParametersCommand({
         Names: pathsChunk,
